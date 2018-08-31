@@ -90,6 +90,8 @@ Arduino.prototype.hideMessage = function () {
     }
 };
 
+//3drobolab ekledi
+
 Arduino.prototype.attemptConnection = function () {
     var myself = this,
         bleEnabled = Arduino.prototype.bleEnabled;
@@ -98,10 +100,32 @@ Arduino.prototype.attemptConnection = function () {
     if (!this.connecting) {
         if (this.board === undefined) {
             // Get list of ports (Arduino compatible)
+			
+			
             Arduino.getSerialPorts(function (ports) {
                 var portMenu = new MenuMorph(this, 'select a port'),
                     portCount = Object.keys(ports).length;
 
+				//3drobolab
+				function addPreference(label, toggle, test) {
+				var on = '\u2611 ',
+					off = '\u2610 ';
+				portMenu.addItem(
+					(test ? on : off) + localize(label),
+					toggle);
+				}
+				if(localStorage['-ucdrobolab-arduinoytpe']!='0'&&localStorage['-ucdrobolab-arduinoytpe']!='1')
+					localStorage['-ucdrobolab-arduinoytpe']='0';
+				
+				addPreference("Arduino Nano",function(){
+					localStorage['-ucdrobolab-arduinoytpe']='0';
+				},localStorage['-ucdrobolab-arduinoytpe']=='0');
+				addPreference("Arduino Uno",function(){
+					localStorage['-ucdrobolab-arduinoytpe']='1';
+				},localStorage['-ucdrobolab-arduinoytpe']=='1');
+				portMenu.addLine();
+				////////////////
+				
                 if (portCount >= 1) {
                     Object.keys(ports).forEach(function (each) {
                         portMenu.addItem(each, function () { 
@@ -115,7 +139,8 @@ Arduino.prototype.attemptConnection = function () {
                         myself.networkDialog();
                     });
                 }
-                if (bleEnabled) {
+                if (bleEnabled) 
+				{
                     portMenu.addLine();
                     portMenu.addItem('BLE device', function () {
                         myself.bleDialog();
@@ -199,9 +224,14 @@ Arduino.prototype.networkDialog = function () {
 Arduino.prototype.verifyPort = function (port, okCallback, failCallback) {
     // The only way to know if this is a proper serial port is to attempt a connection
     try {
+		//3drobolab ekledi
+		var mybitrate=57600;
+		if(localStorage['-ucdrobolab-arduinoytpe']=='1')
+			mybitrate=115200;
+		///
         chrome.serial.connect(
                 port, 
-                { bitrate: 57600 },
+                { bitrate: mybitrate },//mybitrate 56700 dü
                 function (info) { 
                     if (info) { 
                         chrome.serial.disconnect(info.connectionId, okCallback);
@@ -309,7 +339,7 @@ Arduino.prototype.connect = function (port, verify, channel) {
             clearTimeout(myself.connectionTimeout); 
             if (!err) { 
                 // Start the keepAlive interval
-                myself.keepAliveIntervalID = setInterval(function() { myself.keepAlive() }, 5000);
+                myself.keepAliveIntervalID = setInterval(function() { myself.keepAlive() }, 10000);
 
                 myself.board.sp.on('disconnect', function () { myself.disconnectHandler.call(myself) });
                 myself.board.sp.on('close', function () { myself.closeHandler.call(myself) } );
@@ -331,7 +361,6 @@ Arduino.prototype.connect = function (port, verify, channel) {
 
                 myself.hideMessage();
                 myself.board.getArduinoBoardParam = nop;
-                myself.board.checkArduinoBoardParam = nop;
 
                 ide.inform(myself.owner.name, localize('An Arduino board has been connected. Happy prototyping!'));   
             } else {

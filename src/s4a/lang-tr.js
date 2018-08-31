@@ -63,6 +63,8 @@ s4aTempDict = {
     */
 
     // arduino:
+    'arduino connected?':
+        'Arduino bağlı mı?',
 
     'digital input':
         'Sayısal Giriş',
@@ -116,10 +118,10 @@ s4aTempDict = {
         'Sayısal pin oku D %digitalPin',
 
     'connect arduino at %s':
-        'Ardunio ya bağlan port: %s',
+        'Arduino ya bağlan port: %s',
 
     'disconnect arduino':
-        'Ardunio bağlantısını kes',
+        'Arduino bağlantısını kes',
 
     'setup digital pin %digitalPin as %pinMode':
         'Sayısal pin D %digitalPin durumunu %pinMode yap',
@@ -127,8 +129,8 @@ s4aTempDict = {
     'set digital pin %digitalPin to %b':
         'Sayısal pin D %digitalPin değerini %b yap',
 
-    'set servo %digitalPin to %servoValue':
-        'Servo pin D %digitalPin değerini %servoValue yap',
+    'set servo %servoPin to %servoValue':
+        'Servo pin D %servoPin değerini %servoValue yap',
 
     'set pin %pwmPin to value %n':
         'Sayısal pin D %pwmPin değerini %n yap',
@@ -164,8 +166,36 @@ s4aTempDict = {
         'HATA! Arduino kartı üzerinde hata bulundu.\n\n',
 
     'Board is not connected':
-        'Arduino kartı bağlı değil.'
-
+        'Arduino kartı bağlı değil.',
+    'select a port':
+        'Port seçin',
+	'Importing Blocks...':
+        'Bloklar Yükleniyor...',
+	'Import Library':
+        'Kütüphane Ekle',
+	'Are you sure you want to leave?':
+		'Çıkmak istediğinizden emin misiniz?',
+	'Download Libraries':
+		'Kütüphane İndir',
+	'Delete Selected Libraries':
+		'Seçili Kütüphaneleri Sil',
+	'Delete All Libraries':
+		'Bütün Kütüphaneleri Sil',
+	'Unselect All Libraries':
+		'Bütün Seçimleri Kaldır',
+	'Export Selected Libraries':
+		'Seçili Kütüphaneleri Dışa Aktar',
+	'Imported':
+		'İçeri Aktarıldı',
+	'Download':
+		'İndir',
+	'Import':
+		'Ekle',
+	'Library':
+		'Kütüphane',
+	'          Are you sure?        ':
+		'          Emin misiniz?         '
+	
 };
 
 for (var attrname in s4aTempDict) { SnapTranslator.dict.tr[attrname] = s4aTempDict[attrname]; }
