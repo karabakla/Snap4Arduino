@@ -114,15 +114,15 @@ Arduino.prototype.attemptConnection = function () {
 					(test ? on : off) + localize(label),
 					toggle);
 				}
-				if(localStorage['-ucdrobolab-arduinoytpe']!='0'&&localStorage['-ucdrobolab-arduinoytpe']!='1')
-					localStorage['-ucdrobolab-arduinoytpe']='0';
+				if(localStorage['-ucdrobolab-arduinotype']!='0'&&localStorage['-ucdrobolab-arduinotype']!='1')
+					localStorage['-ucdrobolab-arduinotype']='0';
 				
 				addPreference("Arduino Nano",function(){
-					localStorage['-ucdrobolab-arduinoytpe']='0';
-				},localStorage['-ucdrobolab-arduinoytpe']=='0');
+					localStorage['-ucdrobolab-arduinotype']='0';
+				},localStorage['-ucdrobolab-arduinotype']=='0');
 				addPreference("Arduino Uno",function(){
-					localStorage['-ucdrobolab-arduinoytpe']='1';
-				},localStorage['-ucdrobolab-arduinoytpe']=='1');
+					localStorage['-ucdrobolab-arduinotype']='1';
+				},localStorage['-ucdrobolab-arduinotype']=='1');
 				portMenu.addLine();
 				////////////////
 				
@@ -226,7 +226,7 @@ Arduino.prototype.verifyPort = function (port, okCallback, failCallback) {
     try {
 		//3drobolab ekledi
 		var mybitrate=57600;
-		if(localStorage['-ucdrobolab-arduinoytpe']=='1')
+		if(localStorage['-ucdrobolab-arduinotype']=='1')
 			mybitrate=115200;
 		///
         chrome.serial.connect(
