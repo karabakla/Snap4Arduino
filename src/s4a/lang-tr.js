@@ -61,7 +61,7 @@ s4aTempDict = {
         '2018-1-05', // this, too, will appear in the Translators tab (Son güncelleme tarihi)
 
     */
-
+	
     // arduino:
     'arduino connected?':
         'Arduino bağlı mı?',
@@ -129,8 +129,8 @@ s4aTempDict = {
     'set digital pin %digitalPin to %b':
         'Sayısal pin D %digitalPin değerini %b yap',
 
-    'set servo %servoPin to %servoValue':
-        'Servo pin D %servoPin değerini %servoValue yap',
+    'set servo %digitalPin to %servoValue':
+        'Servo pin D %digitalPin değerini %servoValue yap',
 
     'set pin %pwmPin to value %n':
         'Sayısal pin D %pwmPin değerini %n yap',
@@ -194,7 +194,10 @@ s4aTempDict = {
 	'Library':
 		'Kütüphane',
 	'          Are you sure?        ':
-		'          Emin misiniz?         '
+		'          Emin misiniz?         ',
+	//others
+	'fill':
+		'Doldur'
 	
 };
 
