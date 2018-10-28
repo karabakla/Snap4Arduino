@@ -197,7 +197,15 @@ s4aTempDict = {
 		'          Emin misiniz?         ',
 	//others
 	'fill':
-		'Doldur'
+		'Doldur',
+	'Unused blocks':'Kullanılmayan bloklar',
+	'Open from URL...':'URL\'den Aç...',
+	'Save, share and get URL...':'Kaydet, paylaş ve URL edin...',
+	'New Arduino translatable project':'Yeni Arduino dönüştürülebilir projesi',
+	'Start a Snap Jr. session':'Snap Jr. oturumu başlat',
+	'HTTP server':'HTTP sunucusu',
+	'Network serial ports':'Ağ ile seri port',
+	'Network port':'Ağ portu'
 	
 };
 

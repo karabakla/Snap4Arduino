@@ -2,7 +2,7 @@
     "main": "index.html",
     "version": "1.3.0",
     "name": "Snap4Arduino",
-    "description": "Snap4Arduino",
+    "description": "Snap4Arduino-3DRobolab",
     "window": {
         "title": "Snap4Arduino-3DRobolab",
         "icon": "s4a/icon-128.png",

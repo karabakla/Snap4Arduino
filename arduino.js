@@ -122,13 +122,13 @@ Arduino.prototype.attemptConnection = function () {
 				portMenu.addLine();
 				////////////////
 				
-                //if (portCount >= 1) {
+                if (portCount >= 1) {
                     Object.keys(ports).forEach(function (each) {
                         portMenu.addItem(each, function () { 
                             myself.connect(each);
                         })
                     });
-                //}
+                }
                 if (networkPortsEnabled) {
                     portMenu.addLine();
                     portMenu.addItem('Network port', function () {
@@ -141,12 +141,11 @@ Arduino.prototype.attemptConnection = function () {
                         myself.bleDialog();
                     });
                 }
-                //if (networkPortsEnabled || bleEnabled ) {
+                if (networkPortsEnabled || bleEnabled || portCount > 1) {
                     portMenu.popUpAtHand(world);
-                //} 
-				//else if (!networkPortsEnabled && portCount === 1) {
-                  //  myself.connect(Object.keys(ports)[0]);
-                //}
+                } else if (!networkPortsEnabled && portCount === 1) {
+                    myself.connect(Object.keys(ports)[0]);
+                }
             });
         } else {
             ide.inform(myself.name, localize('There is already a board connected to this sprite'));
@@ -162,12 +161,7 @@ Arduino.prototype.attemptConnection = function () {
 Arduino.prototype.closeHandler = function (silent) {
 
     var portName = 'unknown';
-	
-	Arduino.unlockPort(this.port);
-    this.connecting = false;
-    this.disconnecting = false;
-    this.justConnected = false;
-	
+
     clearInterval(this.keepAliveIntervalID);
 
     if (this.board) {
@@ -178,7 +172,12 @@ Arduino.prototype.closeHandler = function (silent) {
 
         this.board = undefined;
     }
-    
+
+    Arduino.unlockPort(this.port);
+    this.connecting = false;
+    this.disconnecting = false;
+    this.justConnected = false;
+
     if (this.gotUnplugged & !silent) {
         ide.inform(
                 this.owner.name,
@@ -310,7 +309,7 @@ Arduino.prototype.connect = function (port, verify, channel) {
         } else {
             ide.inform(
                 myself.owner.name,
-                localize('Error connecting the board. \n Check the port.') + ' ' + err);
+                localize('Error connecting the board.') + ' ' + err);
         }
 
         if (netClient) {
@@ -345,7 +344,7 @@ Arduino.prototype.connect = function (port, verify, channel) {
             clearTimeout(myself.connectionTimeout); 
             if (!err) { 
                 // Start the keepAlive interval
-                myself.keepAliveIntervalID = setInterval(function() { myself.keepAlive() }, 210000);
+                myself.keepAliveIntervalID = setInterval(function() { myself.keepAlive() }, 5000);
 
                 myself.board.sp.on('disconnect', function () { myself.disconnectHandler.call(myself) });
                 myself.board.sp.on('close', function () { myself.closeHandler.call(myself) } );

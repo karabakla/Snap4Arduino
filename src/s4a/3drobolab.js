@@ -851,7 +851,7 @@ IDE_Morph.prototype.ucrobolabmenu = function ()
             }
             try {
                 var myself = IDE_Morph.prototype.myself;
-                ucdLibraryImportDialogMorph.prototype.liburl = 'https://raw.githubusercontent.com/karabakla/Snap4ArduinoLibrarires/master';
+                ucdLibraryImportDialogMorph.prototype.liburl = 'http://3drobolab.com/snap4arduino/libraries';
                 var libs = ucdLibraryImportDialogMorph.prototype.getURL('LIBRARIES');
                 if (!isEmpty(libs)) {
                     var libraries = myself.parseResourceFile(libs);
