@@ -13,11 +13,12 @@ function Arduino (owner) {
     this.disconnecting = false;  // Flag to avoid serialport communication when it is being closed
     this.justConnected = false;	// Flag to avoid double attempts
     this.keepAliveIntervalID = null;
+    this.mytimeoutInterval =null ;
 };
 
 // This function just asks for the version and checks if we've received it after a timeout
 Arduino.prototype.keepAlive = function () {
-    if (Arduino.keepAlive) {
+    if (Arduino.keepAlive) {	
         if (this.board.version.major !== undefined) {
             // Everything looks fine, let's try again
             this.board.version = {};
@@ -42,7 +43,7 @@ Arduino.prototype.disconnect = function (silent, force) {
         } else {
             if (this.board.sp && !this.board.sp.disconnected) {
                 if (!this.connecting || force) {
-                    // otherwise something went wrong in the middle of a connection attempt
+                    // otherwise something went wrong in the middle of a connection attempt                   
                     this.board.sp.close();
                 } 
             }
@@ -50,14 +51,17 @@ Arduino.prototype.disconnect = function (silent, force) {
         this.closeHandler(silent);
     } else {
         if (!silent) {
-            ide.inform(this.owner.name, localize('Board is not connected'))
+            this.closeHandler(true);
+            // this.myinform(this.owner.name, localize('Board is not connected'))
+            this.showMessage(localize('Board is not connected'), true);
         }
-    } 
+    }
 };
 
 // This should belong to the IDE
-Arduino.prototype.showMessage = function (msg) {
-    if (!this.message) { this.message = new DialogBoxMorph() };
+Arduino.prototype.showMessage = function (msg, type) {
+    var _new=false;
+    if (!this.message) { this.message = new DialogBoxMorph(); _new=true; }
 
     var txt = new TextMorph(
             msg,
@@ -76,7 +80,25 @@ Arduino.prototype.showMessage = function (msg) {
 
     this.message.labelString = this.owner.name;
     this.message.createLabel();
-    if (msg) { this.message.addBody(txt) };
+	var myself=this;
+    if (msg) {
+        this.message.addBody(txt)
+        if (_new) {
+            //3drobolab ekledi
+            if (!type) {
+                this.message.addButton(function () {
+                    myself.hideMessage();
+                    myself.disconnect(true, true);
+                    myself.closeHandler(true);
+                    myself.board = undefined;
+                }, 'Cancel');
+            }
+            else
+                this.message.addButton(function () {
+                    myself.hideMessage();
+                }, 'Ok');
+        }
+    }
     this.message.drawNew();
     this.message.fixLayout();
     this.message.popUp(world);
@@ -91,18 +113,42 @@ Arduino.prototype.hideMessage = function () {
 };
 
 Arduino.prototype.attemptConnection = function () {
+	
     var myself = this,
         bleEnabled = Arduino.prototype.bleEnabled;
         networkPortsEnabled = Arduino.prototype.networkPortsEnabled;
-		
+
     if (!this.connecting) {
         if (this.board === undefined) {
             // Get list of ports (Arduino compatible)
             Arduino.getSerialPorts(function (ports) {
                 var portMenu = new MenuMorph(this, 'select a port'),
                     portCount = Object.keys(ports).length;
-
+				
 				//3drobolab
+                
+                portMenu.addItem('Reset Serial Ports', function () {
+
+                    usedPorts = [];
+                    chrome.serial.getConnections(function (connectionInfos) {
+                        for (var i = 0; i < connectionInfos.length; i++) {
+                         //   alert(connectionInfos[i].connectionId);
+                            try {
+                                // alert(connectionInfos[i].name);
+                                this.board.sp.destroy();
+                               
+                            } catch (err) {}
+                            try {
+                                myself.disconnect(true, true);
+                            } catch (err) {  }
+                            try {
+                                chrome.serial.disconnect(connectionInfos[i].connectionId, function (result) { });
+                            } catch (err) { }
+                        }
+                    });
+                });
+                portMenu.addLine();
+
 				function addPreference(label, toggle, test) {
 				var on = '\u2611 ',
 					off = '\u2610 ';
@@ -121,14 +167,14 @@ Arduino.prototype.attemptConnection = function () {
 				},localStorage['-ucdrobolab-arduinotype']=='1');
 				portMenu.addLine();
 				////////////////
-				
-                //if (portCount >= 1) {
+					
+                if (portCount >= 1) {
                     Object.keys(ports).forEach(function (each) {
                         portMenu.addItem(each, function () { 
-                            myself.connect(each);
+							myself.connect(each);
                         })
                     });
-                //}
+                }
                 if (networkPortsEnabled) {
                     portMenu.addLine();
                     portMenu.addItem('Network port', function () {
@@ -141,15 +187,15 @@ Arduino.prototype.attemptConnection = function () {
                         myself.bleDialog();
                     });
                 }
-                //if (networkPortsEnabled || bleEnabled ) {
+               // if (networkPortsEnabled || bleEnabled || portCount > 1) {
                     portMenu.popUpAtHand(world);
-                //} 
-				//else if (!networkPortsEnabled && portCount === 1) {
-                  //  myself.connect(Object.keys(ports)[0]);
+               // } else if (!networkPortsEnabled && portCount === 1) {
+                //    myself.connect(Object.keys(ports)[0]);
                 //}
             });
         } else {
-            ide.inform(myself.name, localize('There is already a board connected to this sprite'));
+            // this.myinform(myself.name, localize('There is already a board connected to this sprite'));
+            myself.showMessage(localize('There is already a board connected to this sprite'), true);
         }
     }
 
@@ -162,12 +208,7 @@ Arduino.prototype.attemptConnection = function () {
 Arduino.prototype.closeHandler = function (silent) {
 
     var portName = 'unknown';
-	
-	Arduino.unlockPort(this.port);
-    this.connecting = false;
-    this.disconnecting = false;
-    this.justConnected = false;
-	
+
     clearInterval(this.keepAliveIntervalID);
 
     if (this.board) {
@@ -177,17 +218,27 @@ Arduino.prototype.closeHandler = function (silent) {
         this.board.sp = undefined;
 
         this.board = undefined;
-    }
-    
+    };
+
+    Arduino.unlockPort(this.port);
+    this.connecting = false;
+    this.disconnecting = false;
+    this.justConnected = false;
+
     if (this.gotUnplugged & !silent) {
-        ide.inform(
+       /* this.myinform(
                 this.owner.name,
                 localize('Board was disconnected from port\n') 
                 + portName 
-                + '\n\nIt seems that someone pulled the cable!');
+                + '\n\nIt seems that someone pulled the cable!');*/
+        this.showMessage(
+                    localize('Board was disconnected from port\n') 
+                    + portName 
+                    + '\n\nIt seems that someone pulled the cable!',true);
         this.gotUnplugged = false;
     } else if (!silent) {
-        ide.inform(this.owner.name, localize('Board was disconnected from port\n') + portName);
+        //this.myinform(this.owner.name, localize('Board was disconnected from port\n') + portName);
+        this.showMessage(localize('Board was disconnected from port\n') + portName,true);
     }
 };
 
@@ -197,11 +248,15 @@ Arduino.prototype.disconnectHandler = function () {
 };
 
 Arduino.prototype.errorHandler = function (err) {
-    ide.inform(
+   /* this.myinform(
             this.owner.name,
             localize('An error was detected on the board\n\n')
             + err,
-            this.disconnect(true));
+            this.disconnect(true));*/
+    this.showMessage(
+            localize('An error was detected on the board\n\n')
+            + err,
+            this.disconnect(true),true);
 };
 
 Arduino.prototype.networkDialog = function () {
@@ -234,6 +289,7 @@ Arduino.prototype.verifyPort = function (port, okCallback, failCallback) {
         failCallback(err);
     }
 };
+
 
 Arduino.prototype.connect = function (port, verify, channel) {
     var myself = this,
@@ -296,21 +352,31 @@ Arduino.prototype.connect = function (port, verify, channel) {
             });
 
         if (err.code === 'EHOSTUNREACH') {
-            ide.inform(
+            /*this.myinform(
                 myself.owner.name, 
                 localize('Unable to connect to board\n')
                     + myself.hostname + '\n\n'
-                    + localize('Make sure the board is powered on'));
+                    + localize('Make sure the board is powered on'));*/
+            this.showMessage(
+                localize('Unable to connect to board\n')
+                + myself.hostname + '\n\n'
+                + localize('Make sure the board is powered on'), true);
         } else if (err.code === 'ECONNREFUSED') {
-            ide.inform(
+            /*this.myinform(
                 myself.owner.name,
                 localize('Unable to connect to board\n')
                     + myself.hostname + '\n\n'
-                    + localize('Make sure the hostname and port are correct'));
+                    + localize('Make sure the hostname and port are correct'));*/
+            this.showMessage(
+                localize('Unable to connect to board\n')
+                    + myself.hostname + '\n\n'
+                    + localize('Make sure the hostname and port are correct'),true);
         } else {
-            ide.inform(
+            /*this.myinform(
                 myself.owner.name,
-                localize('Error connecting the board. \n Check the port.') + ' ' + err);
+                localize('Error connecting the board. \n Check the port.') + ' ' + err);//burada portu sıfırla*/
+            this.showMessage(
+                localize('Error connecting the board. \n Check the port.') + ' ' + err, true);//burada portu sıfırla
         }
 
         if (netClient) {
@@ -324,28 +390,32 @@ Arduino.prototype.connect = function (port, verify, channel) {
         if (channel === 'network') {
             port = this;
         }
-        
-       
-		//3drobolab edited
+        //3drobolab edited
 		var mybitrate=57600;
 		if(localStorage['-ucdrobolab-arduinotype']=='1')
 			mybitrate=115200;
 		
 		var _options = {
 			reportVersionTimeout: 5000,
-			samplingInterval: 50,
+			samplingInterval: 19,
 			serialport: {
 			  baudRate: mybitrate,
 			  bufferSize: 256,
 			},
 		  };
+		  
+		 
 		//
-        myself.board = new Arduino.firmata.Board(port,_options,function (err) {//added _options
+		
+        myself.board = new Arduino.firmata.Board(port,_options, function (err) { 
             // Clear timeout to avoid problems if connection is closed before timeout is completed
-            clearTimeout(myself.connectionTimeout); 
+            clearTimeout(myself.connectionTimeout);
+            clearTimeout(myself.mytimeoutInterval);
+         //   alert("cleared");
+
             if (!err) { 
                 // Start the keepAlive interval
-                myself.keepAliveIntervalID = setInterval(function() { myself.keepAlive() }, 210000);
+                myself.keepAliveIntervalID = setInterval(function() { myself.keepAlive() }, 5000);
 
                 myself.board.sp.on('disconnect', function () { myself.disconnectHandler.call(myself) });
                 myself.board.sp.on('close', function () { myself.closeHandler.call(myself) } );
@@ -363,35 +433,44 @@ Arduino.prototype.connect = function (port, verify, channel) {
                     myself.connecting = false;
                     myself.justConnected = true;
                     myself.board.connected = true;
-                }
-
+                }                
                 myself.hideMessage();
                 myself.board.getArduinoBoardParam = nop;
                 myself.board.checkArduinoBoardParam = nop;
-
-                ide.inform(myself.owner.name, localize('An Arduino board has been connected. Happy prototyping!'));   
+				
+                // this.myinform(myself.owner.name, localize('An Arduino board has been connected. Happy prototyping!'));   
+                myself.showMessage(localize('An Arduino board has been connected. Happy prototyping!'), true); 
             } else {
                 fail(err);
             }
             return;
         });
 
+      //  alert("timeout set");
         // Set timeout to check if device does not speak firmata (in such case new Board callback was never called, but board object exists) 
         this.connectionTimeout = setTimeout(function () {
             // If !board.versionReceived, the board has not established a firmata connection
             if (myself.board && !myself.board.versionReceived) {
+           // if (this.connecting){
                 var port = myself.board.sp.path;
 
                 myself.hideMessage();
-                ide.inform(
+
+               /* this.myinform(
                         myself.owner.name,
                         localize('Could not talk to Arduino in port\n')
                         + port + '\n\n' + localize('Check if firmata is loaded.')
+                        );*/
+                myself.showMessage(
+                    localize('Could not talk to Arduino in port\n')
+                    + port + '\n\n' + localize('Check if firmata is loaded.'), true
                         );
+
+
 
                 // silent and forced closing of the connection attempt
                 myself.disconnect(true, true);
-            }
+           }
         }, 10000);
     };
 };
@@ -474,7 +553,7 @@ Arduino.getSerialPorts = function (callback) {
     chrome.serial.getDevices(function (devices) { 
         if (devices) { 
             devices.forEach(function (device) { 
-                if (!myself.isPortLocked(device.path) && portcheck.test(device.path)) {
+                if (!myself.isPortLocked(device.path) &&portcheck.test(device.path)) {
                     portList[device.path] = device.path; 
                 }
             });

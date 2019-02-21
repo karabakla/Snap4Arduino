@@ -111,6 +111,9 @@ s4aTempDict = {
     'Disconnect Arduino':
         'Bağlantıyı Kes',
 
+    'Reset Serial Ports':
+        'Seri Portları Sıfırla',
+
     'analog reading %analogPin':
         'Analog pin oku A %analogPin',
 
@@ -124,16 +127,16 @@ s4aTempDict = {
         'Arduino bağlantısını kes',
 
     'setup digital pin %digitalPin as %pinMode':
-        'Sayısal pin D %digitalPin durumunu %pinMode yap',
+        'Sayısal pin D %digitalPin %pinMode olarak değiştir',
 
     'set digital pin %digitalPin to %b':
-        'Sayısal pin D %digitalPin değerini %b yap',
+        'Sayısal pin D %digitalPin %b yap',
 
     'set servo %digitalPin to %servoValue':
         'Servo pin D %digitalPin değerini %servoValue yap',
 
     'set pin %pwmPin to value %n':
-        'Sayısal pin D %pwmPin değerini %n yap',
+        'Sayısal pin D %pwmPin değerini %n ayarla',
 
     'Connecting board at port\n':
         'Arduino kartına bağlanıyor port\n ',
@@ -147,14 +150,14 @@ s4aTempDict = {
     'It seems that someone pulled the cable!':
         'HATA! Bağlantı kablosunu kontrol edin!',
 
-    'Error connecting the board.':
-        'HATA! Arduino ya bağlanırken hata oluştu.',
+    'Error connecting the board. \n Check the port.':
+        'HATA! Arduino ya bağlanırken hata oluştu.\n Port Açık Kaldı',
 
     'There is already a board connected to this sprite':
         'Bu karakter zaten bir Arduino ya bağlı.',
 
     'Could not connect an Arduino\nNo boards found':
-        'Aruino ya bağlanılamadı\nKart bulunamadı.',
+        'Arduino ya bağlanılamadı\nKart bulunamadı.',
 
     'Could not talk to Arduino in port\n':
         'Arduino ile iletişim kurulamadı port\n',
